@@ -1,7 +1,12 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:word_masters/button.dart';
+import 'package:path/path.dart' as path;
+import 'dart:async' show Future;
+import 'package:flutter/services.dart' show rootBundle;
 
 void main() {
   runApp(const MyApp());
@@ -72,8 +77,11 @@ class _MyHomePageState extends State<MyHomePage>
             Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: GestureDetector(
-                  onTapDown: _onTapDown,
-                  onTapUp: _onTapUp,
+                  onTap: () {
+                    Future<String> word = _chooseWord("easy");
+                    gamePageNav();
+                    print(word);
+                  },
                   child: Transform.scale(
                     scale: _scale,
                     child: Button(
@@ -86,8 +94,11 @@ class _MyHomePageState extends State<MyHomePage>
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: GestureDetector(
-                onTapDown: _onTapDown,
-                onTapUp: _onTapUp,
+                onTap: () {
+                  Future<String> word = _chooseWord("medium");
+                  gamePageNav();
+                  print(word);
+                },
                 child: Transform.scale(
                   scale: _scale,
                   child: Button(
@@ -102,14 +113,9 @@ class _MyHomePageState extends State<MyHomePage>
               padding: const EdgeInsets.all(16.0),
               child: GestureDetector(
                 onTap: () {
-                  chooseWord("hard");
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const WordScreen(
-                              key: Key("Word Screen"),
-                            )),
-                  );
+                  Future<String> word = _chooseWord("hard");
+                  gamePageNav();
+                  print(word);
                 },
                 child: Transform.scale(
                   scale: _scale,
@@ -132,6 +138,16 @@ class _MyHomePageState extends State<MyHomePage>
     );
   }
 
+  void gamePageNav() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => const WordScreen(
+                key: Key("Word Screen"),
+              )),
+    );
+  }
+
   void _onTapDown(TapDownDetails details) {
     _controller.forward();
 
@@ -148,11 +164,18 @@ class _MyHomePageState extends State<MyHomePage>
     _controller.reverse();
   }
 
-  String chooseWord(String diff) {
-    File('$diff.txt').readAsString().then((String contents) {
-      print(contents);
+  // https://stackoverflow.com/questions/60239587/how-can-i-read-text-from-files-and-display-them-as-list-using-widget-s-in-flutte
+  Future<String> _chooseWord(String diff) async {
+    List<String> words = [];
+    var rand = new Random();
+
+    await rootBundle.loadString('assets/$diff.txt').then((q) {
+      for (String i in LineSplitter().convert(q)) {
+        words.add(i);
+      }
     });
-    return "hello";
+    var word = words[rand.nextInt(words.length)];
+    return word;
   }
 }
 
