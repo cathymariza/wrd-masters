@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:word_masters/button.dart';
 
@@ -12,11 +14,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Word Masters',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Word Masters'),
     );
   }
 }
@@ -34,7 +36,7 @@ class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
   late double _scale;
   late AnimationController _controller;
-
+  late String word;
   @override
   void initState() {
     _controller = AnimationController(
@@ -56,14 +58,6 @@ class _MyHomePageState extends State<MyHomePage>
     _controller.dispose();
   }
 
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     _scale = 1 - _controller.value;
@@ -75,79 +69,90 @@ class _MyHomePageState extends State<MyHomePage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            GestureDetector(
-              onTapDown: _onTapDown,
-              onTapUp: _onTapUp,
-              child: Transform.scale(
-                  scale: _scale,
-                  child: Button(
-                    start: Color(0xFF2EB62C),
-                    end: const Color(0xFF2EB62C),
-                    name: 'Easy',
-                  ) //_animatedButtonUI,
+            Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: GestureDetector(
+                  onTapDown: _onTapDown,
+                  onTapUp: _onTapUp,
+                  child: Transform.scale(
+                    scale: _scale,
+                    child: Button(
+                      start: const Color(0xFF2EB62C),
+                      end: const Color(0xFF2EB62C),
+                      name: 'Easy',
+                    ),
                   ),
-            ),
-            GestureDetector(
-              onTapDown: _onTapDown,
-              onTapUp: _onTapUp,
-              child: Transform.scale(
+                )),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: GestureDetector(
+                onTapDown: _onTapDown,
+                onTapUp: _onTapUp,
+                child: Transform.scale(
                   scale: _scale,
                   child: Button(
-                    start: Color(0xFFFFEA61),
+                    start: const Color(0xFFFFEA61),
                     end: const Color(0xFFFFEA61),
                     name: 'Medium',
-                  ) //_animatedButtonUI,
                   ),
+                ),
+              ),
             ),
-            GestureDetector(
-              onTapDown: _onTapDown,
-              onTapUp: _onTapUp,
-              child: Transform.scale(
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: GestureDetector(
+                onTap: () {
+                  chooseWord("hard");
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const WordScreen(
+                              key: Key("Word Screen"),
+                            )),
+                  );
+                },
+                child: Transform.scale(
                   scale: _scale,
                   child: Button(
-                    start: Color(0xFF2DC1C13),
+                    start: const Color(0xFF2DC1C13),
                     end: const Color(0xFFDC1C13),
                     name: 'Hard',
-                  ) //_animatedButtonUI,
                   ),
-            ),
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
+                ),
+              ),
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Navigator.push(
-          //   context,
-          //   MaterialPageRoute(
-          //       builder: (context) => const WordScreen(
-          //             key: Key("Word Screen"),
-          //           )),
-          // );
-        },
+        onPressed: () {},
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 
-  // Button code from https://github.com/sagarshende23/bouncing_button_flutter
-
   void _onTapDown(TapDownDetails details) {
     _controller.forward();
-    setState(() {
-      _counter++;
-    });
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => const WordScreen(
+                key: Key("Word Screen"),
+              )),
+    );
   }
 
   void _onTapUp(TapUpDetails details) {
     _controller.reverse();
+  }
+
+  String chooseWord(String diff) {
+    File('$diff.txt').readAsString().then((String contents) {
+      print(contents);
+    });
+    return "hello";
   }
 }
 

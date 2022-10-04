@@ -14,7 +14,8 @@ class Button extends StatelessWidget {
       height: 70,
       width: 200,
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(100.0),
+          //borderRadius: BorderRadius.circular(100.0),
+          border: Border.all(color: Colors.black, width: 2),
           boxShadow: const [
             BoxShadow(
               color: Color(0x80000000),
@@ -31,7 +32,7 @@ class Button extends StatelessWidget {
         child: Text(
           name,
           style: const TextStyle(
-              fontSize: 30.0, fontWeight: FontWeight.bold, color: Colors.white),
+              fontSize: 30.0, fontWeight: FontWeight.bold, color: Colors.black),
         ),
       ),
     );
