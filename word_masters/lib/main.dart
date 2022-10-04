@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:word_masters/button.dart';
 
 void main() {
   runApp(const MyApp());
@@ -29,7 +30,32 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage>
+    with SingleTickerProviderStateMixin {
+  late double _scale;
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(
+        milliseconds: 200,
+      ),
+      lowerBound: 0.0,
+      upperBound: 0.1,
+    )..addListener(() {
+        setState(() {});
+      });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _controller.dispose();
+  }
+
   int _counter = 0;
 
   void _incrementCounter() {
@@ -40,6 +66,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    _scale = 1 - _controller.value;
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -48,6 +75,42 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            GestureDetector(
+              onTapDown: _onTapDown,
+              onTapUp: _onTapUp,
+              child: Transform.scale(
+                  scale: _scale,
+                  child: Button(
+                    start: Color(0xFF2EB62C),
+                    end: const Color(0xFF2EB62C),
+                    name: 'Easy',
+                  ) //_animatedButtonUI,
+                  ),
+            ),
+            GestureDetector(
+              onTapDown: _onTapDown,
+              onTapUp: _onTapUp,
+              child: Transform.scale(
+                  scale: _scale,
+                  child: Button(
+                    start: Color(0xFFFFEA61),
+                    end: const Color(0xFFFFEA61),
+                    name: 'Medium',
+                  ) //_animatedButtonUI,
+                  ),
+            ),
+            GestureDetector(
+              onTapDown: _onTapDown,
+              onTapUp: _onTapUp,
+              child: Transform.scale(
+                  scale: _scale,
+                  child: Button(
+                    start: Color(0xFF2DC1C13),
+                    end: const Color(0xFFDC1C13),
+                    name: 'Hard',
+                  ) //_animatedButtonUI,
+                  ),
+            ),
             const Text(
               'You have pushed the button this many times:',
             ),
@@ -60,18 +123,31 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const WordScreen(
-                      key: Key("Word Screen"),
-                    )),
-          );
+          // Navigator.push(
+          //   context,
+          //   MaterialPageRoute(
+          //       builder: (context) => const WordScreen(
+          //             key: Key("Word Screen"),
+          //           )),
+          // );
         },
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+
+  // Button code from https://github.com/sagarshende23/bouncing_button_flutter
+
+  void _onTapDown(TapDownDetails details) {
+    _controller.forward();
+    setState(() {
+      _counter++;
+    });
+  }
+
+  void _onTapUp(TapUpDetails details) {
+    _controller.reverse();
   }
 }
 
