@@ -77,9 +77,9 @@ class _MyHomePageState extends State<MyHomePage>
             Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: GestureDetector(
-                  onTap: () {
-                    Future<String> word = _chooseWord("easy");
-                    gamePageNav();
+                  onTap: () async {
+                    String word = await _chooseWord("easy");
+                    gamePageNav(word);
                     print(word);
                   },
                   child: Transform.scale(
@@ -94,9 +94,9 @@ class _MyHomePageState extends State<MyHomePage>
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: GestureDetector(
-                onTap: () {
-                  Future<String> word = _chooseWord("medium");
-                  gamePageNav();
+                onTap: () async {
+                  String word = await _chooseWord("medium");
+                  gamePageNav(word);
                   print(word);
                 },
                 child: Transform.scale(
@@ -112,9 +112,9 @@ class _MyHomePageState extends State<MyHomePage>
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: GestureDetector(
-                onTap: () {
-                  Future<String> word = _chooseWord("hard");
-                  gamePageNav();
+                onTap: () async {
+                  String word = await _chooseWord("hard");
+                  gamePageNav(word);
                   print(word);
                 },
                 child: Transform.scale(
@@ -138,12 +138,13 @@ class _MyHomePageState extends State<MyHomePage>
     );
   }
 
-  void gamePageNav() {
+  void gamePageNav(String word) {
     Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (context) => const WordScreen(
-                key: Key("Word Screen"),
+          builder: (context) => WordScreen(
+                key: const Key("Word Screen"),
+                word: word,
               )),
     );
   }
@@ -151,13 +152,13 @@ class _MyHomePageState extends State<MyHomePage>
   void _onTapDown(TapDownDetails details) {
     _controller.forward();
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-          builder: (context) => const WordScreen(
-                key: Key("Word Screen"),
-              )),
-    );
+    // Navigator.push(
+    //   context,
+    //   MaterialPageRoute(
+    //       builder: (context) => const WordScreen(
+    //             key: Key("Word Screen"),
+    //           )),
+    // );
   }
 
   void _onTapUp(TapUpDetails details) {
@@ -175,19 +176,27 @@ class _MyHomePageState extends State<MyHomePage>
       }
     });
     var word = words[rand.nextInt(words.length)];
+    print(word);
+    print(word.runtimeType);
+
     return word;
   }
 }
 
 class WordScreen extends StatefulWidget {
-  const WordScreen({Key? key}) : super(key: key);
+  WordScreen({Key? key, required this.word}) : super(key: key);
+
+  String word;
 
   @override
-  _WordScreenState createState() => _WordScreenState();
+  _WordScreenState createState() => _WordScreenState(word);
 }
 
 // add a field that requires a word to passed to create this screen
 class _WordScreenState extends State<WordScreen> {
+  _WordScreenState(this.word);
+  String word;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -198,9 +207,9 @@ class _WordScreenState extends State<WordScreen> {
       body: Container(
           alignment: Alignment.center,
           padding: EdgeInsets.all(30),
-          child: Column(children: const [
+          child: Column(children: [
             Text(
-              "Does this thing work",
+              "$word",
               style: TextStyle(fontSize: 30),
             )
           ])),
