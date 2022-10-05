@@ -186,6 +186,7 @@ class WordScreen extends StatefulWidget {
   _WordScreenState createState() => _WordScreenState();
 }
 
+// add a field that requires a word to passed to create this screen
 class _WordScreenState extends State<WordScreen> {
   @override
   Widget build(BuildContext context) {
