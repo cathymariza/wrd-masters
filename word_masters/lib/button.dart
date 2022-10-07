@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 // Button code from https://github.com/sagarshende23/bouncing_button_flutter
 class Button extends StatelessWidget {
-  Button({Key? key, required this.start, required this.end, required this.name})
+  const Button(
+      {Key? key, required this.start, required this.end, required this.name})
       : super(key: key);
 
   final Color start;

@@ -1,10 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:word_masters/button.dart';
-import 'package:path/path.dart' as path;
 import 'dart:async' show Future;
 import 'package:flutter/services.dart' show rootBundle;
 
@@ -79,8 +77,8 @@ class _MyHomePageState extends State<MyHomePage>
                 child: GestureDetector(
                   onTap: () async {
                     String word = await _chooseWord("easy");
-                    gamePageNav(word);
-                    print(word);
+                    List words = await _wordList();
+                    gamePageNav(word, words);
                   },
                   child: Transform.scale(
                     scale: _scale,
@@ -96,8 +94,8 @@ class _MyHomePageState extends State<MyHomePage>
               child: GestureDetector(
                 onTap: () async {
                   String word = await _chooseWord("medium");
-                  gamePageNav(word);
-                  print(word);
+                  List words = await _wordList();
+                  gamePageNav(word, words);
                 },
                 child: Transform.scale(
                   scale: _scale,
@@ -114,13 +112,13 @@ class _MyHomePageState extends State<MyHomePage>
               child: GestureDetector(
                 onTap: () async {
                   String word = await _chooseWord("hard");
-                  gamePageNav(word);
-                  print(word);
+                  List words = await _wordList();
+                  gamePageNav(word, words);
                 },
                 child: Transform.scale(
                   scale: _scale,
                   child: Button(
-                    start: const Color(0xFF2DC1C13),
+                    start: const Color(0xFFDC1C13),
                     end: const Color(0xFFDC1C13),
                     name: 'Hard',
                   ),
@@ -138,31 +136,13 @@ class _MyHomePageState extends State<MyHomePage>
     );
   }
 
-  void gamePageNav(String word) {
+  void gamePageNav(String word, List words) {
     Navigator.push(
       context,
       MaterialPageRoute(
           builder: (context) => WordScreen(
-                key: const Key("Word Screen"),
-                word: word,
-              )),
+              key: const Key("Word Screen"), word: word, words: words)),
     );
-  }
-
-  void _onTapDown(TapDownDetails details) {
-    _controller.forward();
-
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(
-    //       builder: (context) => const WordScreen(
-    //             key: Key("Word Screen"),
-    //           )),
-    // );
-  }
-
-  void _onTapUp(TapUpDetails details) {
-    _controller.reverse();
   }
 
   // https://stackoverflow.com/questions/60239587/how-can-i-read-text-from-files-and-display-them-as-list-using-widget-s-in-flutte
@@ -181,29 +161,43 @@ class _MyHomePageState extends State<MyHomePage>
 
     return word;
   }
+
+  Future<List> _wordList() async {
+    var words = [];
+    await rootBundle.loadString('assets/english3.txt').then((q) {
+      for (String i in const LineSplitter().convert(q)) {
+        words.add(i);
+      }
+    });
+    print(words);
+    return words; // i just really want this word list
+  }
 }
 
 class WordScreen extends StatefulWidget {
-  WordScreen({Key? key, required this.word}) : super(key: key);
+  WordScreen({Key? key, required this.word, required this.words})
+      : super(key: key);
 
   String word;
+  List words;
 
   @override
-  _WordScreenState createState() => _WordScreenState(word);
+  _WordScreenState createState() => _WordScreenState(word, words);
 }
 
 // add a field that requires a word to passed to create this screen
 class _WordScreenState extends State<WordScreen> {
-  _WordScreenState(this.word);
+  _WordScreenState(this.word, this.words);
   String word;
+  List words;
 
   // ALSO I ADDED THIS
   final _entryForm = GlobalKey<FormState>(); // for validator
 
   // i just want the dictionary to check validation -- currently not working
-  List _wordList() {
+  Future<List> _wordList() async {
     var words = [];
-    rootBundle.loadString('assets/english3.txt').then((q) {
+    await rootBundle.loadString('assets/english3.txt').then((q) {
       for (String i in const LineSplitter().convert(q)) {
         words.add(i);
       }
@@ -214,7 +208,7 @@ class _WordScreenState extends State<WordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    var words = _wordList();
+    //var words = await _wordList();
     return Scaffold(
       appBar: AppBar(
         title: Text("This is the second screen"),
@@ -222,7 +216,7 @@ class _WordScreenState extends State<WordScreen> {
       ),
       body: Container(
           alignment: Alignment.center,
-          padding: EdgeInsets.all(30),
+          padding: const EdgeInsets.all(30),
           child: Column(children: [
             Text(
               "$word",
