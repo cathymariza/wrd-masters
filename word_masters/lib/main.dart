@@ -169,7 +169,7 @@ class _MyHomePageState extends State<MyHomePage>
         words.add(i);
       }
     });
-    print(words);
+    //print(words);
     return words; // i just really want this word list
   }
 }
@@ -231,6 +231,9 @@ class _WordScreenState extends State<WordScreen> {
                 decoration: InputDecoration(
                     border: OutlineInputBorder(), hintText: 'Enter Guess'),
                 validator: (inputValue) {
+                  if (inputValue == word) {
+                    return "woohoo!";
+                  }
                   if (inputValue == null || inputValue.isEmpty) {
                     return 'Please enter a guess';
                   }
