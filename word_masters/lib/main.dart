@@ -197,8 +197,24 @@ class _WordScreenState extends State<WordScreen> {
   _WordScreenState(this.word);
   String word;
 
+  // ALSO I ADDED THIS
+  final _entryForm = GlobalKey<FormState>(); // for validator
+
+  // i just want the dictionary to check validation -- currently not working
+  List _wordList() {
+    var words = [];
+    rootBundle.loadString('assets/english3.txt').then((q) {
+      for (String i in const LineSplitter().convert(q)) {
+        words.add(i);
+      }
+    });
+    print(words);
+    return words; // i just really want this word list
+  } // AND THIS
+
   @override
   Widget build(BuildContext context) {
+    var words = _wordList();
     return Scaffold(
       appBar: AppBar(
         title: Text("This is the second screen"),
@@ -211,7 +227,45 @@ class _WordScreenState extends State<WordScreen> {
             Text(
               "$word",
               style: TextStyle(fontSize: 30),
-            )
+            ),
+
+            //// EVERYTHING i ADDED STARTS HERE
+            Form(
+              key: _entryForm,
+              child: TextFormField(
+                key: const Key('formKey'),
+                decoration: InputDecoration(
+                    border: OutlineInputBorder(), hintText: 'Enter Guess'),
+                validator: (inputValue) {
+                  if (inputValue == null || inputValue.isEmpty) {
+                    return 'Please enter a guess';
+                  }
+                  if (words.contains(inputValue)) {
+                    return "good guess but not the right word";
+                  }
+                  if (inputValue.length != word.length) {
+                    return "word length doesn't match";
+                  } else {
+                    return "not a valid word, try again";
+                  }
+                },
+              ),
+            ),
+            //this button validates submitted answer
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: ElevatedButton(
+                onPressed: () {
+                  // Validate returns true if the form is valid, or false otherwise.
+                  if (_entryForm.currentState!.validate()) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Processing Guess')),
+                    );
+                  }
+                },
+                child: const Text('Submit'),
+              ),
+            ),
           ])),
     );
   }
