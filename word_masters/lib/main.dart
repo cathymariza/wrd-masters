@@ -142,9 +142,9 @@ class _MyHomePageState extends State<MyHomePage>
     Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (context) => WordScreen(
-                key: const Key("Word Screen"),
-                word: word,
+          builder: (context) => FriendScreen(
+                key: const Key("Friend Screen"),
+                title: "Welcome",
               )),
     );
   }
@@ -210,6 +210,39 @@ class _WordScreenState extends State<WordScreen> {
           child: Column(children: [
             Text(
               "$word",
+              style: TextStyle(fontSize: 30),
+            )
+          ])),
+    );
+  }
+}
+class FriendScreen extends StatefulWidget {
+  FriendScreen({Key? key, required this.title}) : super(key: key);
+
+  final String title;
+
+  @override
+  _FriendScreenState createState() => _FriendScreenState(title);
+}
+
+// add a field that requires a word to passed to create this screen
+class _FriendScreenState extends State<FriendScreen> {
+  _FriendScreenState(this.title);
+  String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("This is the second screen"),
+        backgroundColor: Colors.blueGrey,
+      ),
+      body: Container(
+          alignment: Alignment.center,
+          padding: EdgeInsets.all(30),
+          child: Column(children: [
+            Text(
+              "Hi",
               style: TextStyle(fontSize: 30),
             )
           ])),
