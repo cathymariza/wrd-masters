@@ -20,14 +20,18 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Word Masters',
-      theme: ThemeData(
+      /*theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Word Masters'),
+      home: const MyHomePage(title: 'Word Masters'),*/
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: MyHomePage(title: 'Networking Demo'),
     );
   }
 }
-
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
@@ -36,8 +40,61 @@ class MyHomePage extends StatefulWidget {
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
+class _MyHomePageState extends State<MyHomePage> {
+  int _counter = 0;
 
-class _MyHomePageState extends State<MyHomePage>
+  void _incrementCounter() {
+    setState(() {
+      _counter++;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        // Here we take the value from the MyHomePage object that was created by
+        // the App.build method, and use it to set our appbar title.
+        title: Text(widget.title),
+      ),
+      body: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Center(
+              child: ElevatedButton(
+                child: const Text('Open route'),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => LevelScreen(title: "Welcome")),
+            );
+          },
+        ),
+)      
+            /*Text(
+              '$_counter',
+              style: Theme.of(context).textTheme.headline4,
+            ),*/
+          ],
+        ),
+      );
+  }
+}
+
+
+
+class LevelScreen extends StatefulWidget{
+  LevelScreen({super.key, required this.title});
+
+  final String title;
+
+  @override
+  //_LevelScreenState createState() => _LevelScreenState();
+  _LevelScreenState createState() => _LevelScreenState();
+}
+
+
+class _LevelScreenState extends State<LevelScreen>
     with SingleTickerProviderStateMixin {
   late double _scale;
   late AnimationController _controller;
@@ -79,8 +136,8 @@ class _MyHomePageState extends State<MyHomePage>
                 child: GestureDetector(
                   onTap: () async {
                     String word = await _chooseWord("easy");
-                    gamePageNav(word);
-                    print(word);
+                    List words = await _wordList();
+                    gamePageNav(word, words);
                   },
                   child: Transform.scale(
                     scale: _scale,
@@ -96,8 +153,8 @@ class _MyHomePageState extends State<MyHomePage>
               child: GestureDetector(
                 onTap: () async {
                   String word = await _chooseWord("medium");
-                  gamePageNav(word);
-                  print(word);
+                  List words = await _wordList();
+                  gamePageNav(word, words);
                 },
                 child: Transform.scale(
                   scale: _scale,
@@ -114,13 +171,13 @@ class _MyHomePageState extends State<MyHomePage>
               child: GestureDetector(
                 onTap: () async {
                   String word = await _chooseWord("hard");
-                  gamePageNav(word);
-                  print(word);
+                  List words = await _wordList();
+                  gamePageNav(word, words);
                 },
                 child: Transform.scale(
                   scale: _scale,
                   child: Button(
-                    start: const Color(0xFF2DC1C13),
+                    start: const Color(0xFFDC1C13),
                     end: const Color(0xFFDC1C13),
                     name: 'Hard',
                   ),
@@ -138,27 +195,19 @@ class _MyHomePageState extends State<MyHomePage>
     );
   }
 
-  void gamePageNav(String word) {
+  
+  void gamePageNav(String word, List words) {
     Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (context) => FriendScreen(
-                key: const Key("Friend Screen"),
-                title: "Welcome",
-              )),
+          builder: (context) => WordScreen(
+              key: const Key("Word Screen"), word: word, words: words)),
     );
   }
 
   void _onTapDown(TapDownDetails details) {
     _controller.forward();
 
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(
-    //       builder: (context) => const WordScreen(
-    //             key: Key("Word Screen"),
-    //           )),
-    // );
   }
 
   void _onTapUp(TapUpDetails details) {
@@ -181,9 +230,112 @@ class _MyHomePageState extends State<MyHomePage>
 
     return word;
   }
+  Future<List> _wordList() async {
+    var words = [];
+    await rootBundle.loadString('assets/english3.txt').then((q) {
+      for (String i in const LineSplitter().convert(q)) {
+        words.add(i);
+      }
+    });
+    //print(words);
+    return words; // i just really want this word list
+  }
 }
 
 class WordScreen extends StatefulWidget {
+  WordScreen({Key? key, required this.word, required this.words})
+      : super(key: key);
+
+  String word;
+  List words;
+
+  @override
+  _WordScreenState createState() => _WordScreenState(word, words);
+}
+
+// add a field that requires a word to passed to create this screen
+class _WordScreenState extends State<WordScreen> {
+  _WordScreenState(this.word, this.words);
+  String word;
+  List words;
+
+  // ALSO I ADDED THIS
+  final _entryForm = GlobalKey<FormState>(); // for validator
+
+  // i just want the dictionary to check validation -- currently not working
+  Future<List> _wordList() async {
+    var words = [];
+    await rootBundle.loadString('assets/english3.txt').then((q) {
+      for (String i in const LineSplitter().convert(q)) {
+        words.add(i);
+      }
+    });
+    print(words);
+    return words; // i just really want this word list
+  } // AND THIS
+
+  @override
+  Widget build(BuildContext context) {
+    //var words = await _wordList();
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("This is the second screen"),
+        backgroundColor: Colors.redAccent,
+      ),
+      body: Container(
+          alignment: Alignment.center,
+          padding: const EdgeInsets.all(30),
+          child: Column(children: [
+            Text(
+              "$word",
+              style: TextStyle(fontSize: 30),
+            ),
+
+            //// EVERYTHING i ADDED STARTS HERE
+            Form(
+              key: _entryForm,
+              child: TextFormField(
+                key: const Key('formKey'),
+                decoration: InputDecoration(
+                    border: OutlineInputBorder(), hintText: 'Enter Guess'),
+                validator: (inputValue) {
+                  if (inputValue == word) {
+                    return "woohoo!";
+                  }
+                  if (inputValue == null || inputValue.isEmpty) {
+                    return 'Please enter a guess';
+                  }
+                  if (words.contains(inputValue)) {
+                    return "good guess but not the right word";
+                  }
+                  if (inputValue.length != word.length) {
+                    return "word length doesn't match";
+                  } else {
+                    return "not a valid word, try again";
+                  }
+                },
+              ),
+            ),
+            //this button validates submitted answer
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: ElevatedButton(
+                onPressed: () {
+                  // Validate returns true if the form is valid, or false otherwise.
+                  if (_entryForm.currentState!.validate()) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Processing Guess')),
+                    );
+                  }
+                },
+                child: const Text('Submit'),
+              ),
+            ),
+          ])),
+    );
+
+
+/*class WordScreen extends StatefulWidget {
   WordScreen({Key? key, required this.word}) : super(key: key);
 
   String word;
@@ -201,7 +353,7 @@ class _WordScreenState extends State<WordScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("This is the second screen"),
+        title: Text("Word Screen"),
         backgroundColor: Colors.redAccent,
       ),
       body: Container(
@@ -214,9 +366,9 @@ class _WordScreenState extends State<WordScreen> {
             )
           ])),
     );
-  }
 }
-class FriendScreen extends StatefulWidget {
+
+/*class FriendScreen extends StatefulWidget {
   FriendScreen({Key? key, required this.title}) : super(key: key);
 
   final String title;
@@ -227,25 +379,67 @@ class FriendScreen extends StatefulWidget {
 
 // add a field that requires a word to passed to create this screen
 class _FriendScreenState extends State<FriendScreen> {
-  _FriendScreenState(this.title);
+  late double _scale;
+  late String word;
+  @override
+  void initState() {
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(
+        milliseconds: 200,
+      ),
+      lowerBound: 0.0,
+      upperBound: 0.1,
+    )..addListener(() {
+        setState(() {});
+      });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _controller.dispose();
+  }
   String title;
 
   @override
   Widget build(BuildContext context) {
+    _scale = 1 - _controller.value;
     return Scaffold(
       appBar: AppBar(
-        title: Text("This is the second screen"),
+        title: Text("Friend Screen"),
         backgroundColor: Colors.blueGrey,
       ),
-      body: Container(
-          alignment: Alignment.center,
-          padding: EdgeInsets.all(30),
-          child: Column(children: [
-            Text(
-              "Hi",
-              style: TextStyle(fontSize: 30),
-            )
-          ])),
-    );
-  }
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: GestureDetector(
+                  onTap: () async {
+                    //String word = await _chooseWord("easy");
+                    FriendPageNav();
+                    print(word);
+                  },
+                  child: Transform.scale(
+                    scale: _scale,
+                    child: Button(
+                      start: const Color(0xFF2EB62C),
+                      end: const Color(0xFF2EB62C),
+                      name: 'Easy',
+                    ),
+                  ),
+                )),
+  void FriendPageNav() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => WordScreen(
+                key: const Key("Word Screen"),
+                title: "Welcome",
+              )),*/*/
+    
+}
 }
