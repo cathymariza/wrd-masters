@@ -202,7 +202,7 @@ class _WordScreenState extends State<WordScreen> {
         words.add(i);
       }
     });
-    print(words);
+    //print(words);
     return words; // i just really want this word list
   } // AND THIS
 
@@ -237,9 +237,22 @@ class _WordScreenState extends State<WordScreen> {
                   if (inputValue == null || inputValue.isEmpty) {
                     return 'Please enter a guess';
                   }
+                  //bulls and cows portion
                   if (words.contains(inputValue)) {
-                    return "good guess but not the right word";
+                    // save list of letters in word
+                    // check letters in inputValue agaisnt word
+                    // hard part of knowing if it is in the rigth location
+                    int bulls = 0;
+                    int cows = 0;
+                    for (int i = 0; i < inputValue.length; i++) {
+                      if (word.contains(inputValue[i])) {
+                        cows += 1;
+                      }
+                    }
+
+                    return "Cows: $cows, bulls: $bulls";
                   }
+
                   if (inputValue.length != word.length) {
                     return "word length doesn't match";
                   } else {
