@@ -1,12 +1,20 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:word_masters/button.dart';
+import 'package:network_info_plus/network_info_plus.dart';
+
 import 'package:path/path.dart' as path;
-import 'dart:async' show Future;
+import 'dart:async' show Future, StreamSubscription;
 import 'package:flutter/services.dart' show rootBundle;
+import 'list_items.dart';
+import 'package:word_masters/friends_data.dart';
+import 'package:word_masters/text_widgets.dart';
+
+import 'chat.dart';
 
 void main() {
   runApp(const MyApp());
@@ -41,11 +49,138 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
 
-  void _incrementCounter() {
+  String? _ipaddress = "Loading...";
+  late StreamSubscription<Socket> server_sub;
+  late Friends _friends;
+  late List<DropdownMenuItem<String>> _friendList;
+  late TextEditingController _nameController, _ipController;
+
+  
+  void initState() {
+    super.initState();
+    _friends = Friends();
+    _friends.add("Self", "127.0.0.1");
+    _nameController = TextEditingController();
+    _ipController = TextEditingController();
+    _setupServer();
+    _findIPAddress();
+  }
+
+  void dispose() {
+    server_sub.cancel();
+    super.dispose();
+  }
+
+  Future<void> _findIPAddress() async {
+    // Thank you https://stackoverflow.com/questions/52411168/how-to-get-device-ip-in-dart-flutter
+    String? ip = await NetworkInfo().getWifiIP();
     setState(() {
-      _counter++;
+      _ipaddress = "My IP: " + ip!;
+    });
+  }
+
+  Future<void> _setupServer() async {
+    try {
+      ServerSocket server =
+          await ServerSocket.bind(InternetAddress.anyIPv4, ourPort);
+      server_sub = server.listen(_listenToSocket); // StreamSubscription<Socket>
+    } on SocketException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Error: $e"),
+      ));
+    }
+  }
+
+  void _listenToSocket(Socket socket) {
+    socket.listen((data) {
+      setState(() {
+        _handleIncomingMessage(socket.remoteAddress.address, data);
+      });
+    });
+  }
+
+  void _handleIncomingMessage(String ip, Uint8List incomingData) {
+    String received = String.fromCharCodes(incomingData);
+    print("Received '$received' from '$ip'");
+    _friends.receiveFrom(ip, received);
+  }
+
+  void addNew() {
+    setState(() {
+      _friends.add(_nameController.text, _ipController.text);
+    });
+  }
+
+  final ButtonStyle yesStyle = ElevatedButton.styleFrom(
+      textStyle: const TextStyle(fontSize: 20), /*backgroundColor: Colors.green)*/);
+  final ButtonStyle noStyle = ElevatedButton.styleFrom(
+      textStyle: const TextStyle(fontSize: 20), /*backgroundColor: Colors.red*/);
+
+Future<void> _displayTextInputDialog(BuildContext context) async {
+    print("Loading Dialog");
+    _nameController.text = "";
+    _ipController.text = "";
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Add A Friend'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                TextEntry(
+                    width: 200,
+                    label: "Name",
+                    inType: TextInputType.text,
+                    controller: _nameController),
+                TextEntry(
+                    width: 200,
+                    label: "IP Address",
+                    inType: TextInputType.number,
+                    controller: _ipController),
+              ],
+            ),
+            actions: <Widget>[
+              ElevatedButton(
+                key: const Key("CancelButton"),
+                style: noStyle,
+                child: const Text('Cancel'),
+                onPressed: () {
+                  setState(() {
+                    Navigator.pop(context);
+                  });
+                },
+              ),
+              ElevatedButton(
+                key: const Key("OKButton"),
+                style: yesStyle,
+                child: const Text('OK'),
+                onPressed: () {
+                  setState(() {
+                    addNew();
+                    Navigator.pop(context);
+                  });
+                },
+              ),
+            ],
+          );
+        });
+  }
+
+  Future<void> _handleChat(Friend friend) async {
+    print("Chat");
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => ChatScreen(friend: friend),
+      ),
+    );
+  }
+
+  void _handleEditFriend(Friend friend) {
+    setState(() {
+      print("Edit");
     });
   }
 
@@ -53,34 +188,51 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
       body: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Center(
-              child: ElevatedButton(
-                child: const Text('Open route'),
+        children: <Widget>[
+          Center(
+            child: ElevatedButton(
+              child: const Text("Start"),
+              onPressed: () {
+                Navigator.push(
+                  context, 
+                  MaterialPageRoute(builder: (context) => LevelScreen(title: "Welcome"))
+                  );
+              },
+              )
+            /*child: ListView(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              children: _friends.map((name) {
+                return FriendListItem(
+                  friend: _friends.getFriend(name)!,
+                  onListTapped: _handleChat,
+                  onListEdited: _handleEditFriend,
+                );*/
+        
+        )
+            /*floatingActionButton: FloatingActionButton(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => LevelScreen(title: "Welcome")),
-            );
-          },
-        ),
-)      
-            /*Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),*/
-          ],
-        ),
-      );
+                _displayTextInputDialog(context);
+                tooltip: 'Add Friend',
+            child: const Icon(Icons.add),*/
+          
+        /*/bottomNavigationBar: Padding(
+          padding: EdgeInsets.all(10),
+          child: Container(
+              width: double.infinity,
+              child: Text(
+                _ipaddress!,
+                textAlign: TextAlign.center,
+              )));*/
+  
+            
+    ]));
+       
+      
   }
-}
-
+  }
 
 
 class LevelScreen extends StatefulWidget{
@@ -126,6 +278,7 @@ class _LevelScreenState extends State<LevelScreen>
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+        backgroundColor: Colors.redAccent,
       ),
       body: Center(
         child: Column(
@@ -186,11 +339,6 @@ class _LevelScreenState extends State<LevelScreen>
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
@@ -335,111 +483,9 @@ class _WordScreenState extends State<WordScreen> {
     );
 
 
-/*class WordScreen extends StatefulWidget {
-  WordScreen({Key? key, required this.word}) : super(key: key);
 
-  String word;
 
-  @override
-  _WordScreenState createState() => _WordScreenState(word);
-}
 
-// add a field that requires a word to passed to create this screen
-class _WordScreenState extends State<WordScreen> {
-  _WordScreenState(this.word);
-  String word;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Word Screen"),
-        backgroundColor: Colors.redAccent,
-      ),
-      body: Container(
-          alignment: Alignment.center,
-          padding: EdgeInsets.all(30),
-          child: Column(children: [
-            Text(
-              "$word",
-              style: TextStyle(fontSize: 30),
-            )
-          ])),
-    );
-}
-
-/*class FriendScreen extends StatefulWidget {
-  FriendScreen({Key? key, required this.title}) : super(key: key);
-
-  final String title;
-
-  @override
-  _FriendScreenState createState() => _FriendScreenState(title);
-}
-
-// add a field that requires a word to passed to create this screen
-class _FriendScreenState extends State<FriendScreen> {
-  late double _scale;
-  late String word;
-  @override
-  void initState() {
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(
-        milliseconds: 200,
-      ),
-      lowerBound: 0.0,
-      upperBound: 0.1,
-    )..addListener(() {
-        setState(() {});
-      });
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _controller.dispose();
-  }
-  String title;
-
-  @override
-  Widget build(BuildContext context) {
-    _scale = 1 - _controller.value;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Friend Screen"),
-        backgroundColor: Colors.blueGrey,
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: GestureDetector(
-                  onTap: () async {
-                    //String word = await _chooseWord("easy");
-                    FriendPageNav();
-                    print(word);
-                  },
-                  child: Transform.scale(
-                    scale: _scale,
-                    child: Button(
-                      start: const Color(0xFF2EB62C),
-                      end: const Color(0xFF2EB62C),
-                      name: 'Easy',
-                    ),
-                  ),
-                )),
-  void FriendPageNav() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-          builder: (context) => WordScreen(
-                key: const Key("Word Screen"),
-                title: "Welcome",
-              )),*/*/
     
-}
+  } 
 }
