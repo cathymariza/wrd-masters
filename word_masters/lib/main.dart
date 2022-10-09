@@ -245,8 +245,12 @@ class _WordScreenState extends State<WordScreen> {
                     int bulls = 0;
                     int cows = 0;
                     for (int i = 0; i < inputValue.length; i++) {
-                      if (word.contains(inputValue[i])) {
-                        cows += 1;
+                      if (word[i] == inputValue[i]) {
+                        bulls += 1;
+                      } else {
+                        if (word.contains(inputValue[i])) {
+                          cows += 1;
+                        }
                       }
                     }
 
