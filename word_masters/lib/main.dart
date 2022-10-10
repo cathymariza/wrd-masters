@@ -1,10 +1,16 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:word_masters/button.dart';
 import 'dart:async' show Future;
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:word_masters/friends_data.dart';
+import 'package:network_info_plus/network_info_plus.dart';
+import "package:word_masters/text_widgets.dart";
+
+import 'list_items.dart';
 
 void main() {
   runApp(const MyApp());
@@ -38,6 +44,7 @@ class _MyHomePageState extends State<MyHomePage>
   late double _scale;
   late AnimationController _controller;
   late String word;
+
   @override
   void initState() {
     _controller = AnimationController(
@@ -51,12 +58,6 @@ class _MyHomePageState extends State<MyHomePage>
         setState(() {});
       });
     super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _controller.dispose();
   }
 
   @override
@@ -86,7 +87,7 @@ class _MyHomePageState extends State<MyHomePage>
                   onTap: () async {
                     String word = await _chooseWord("easy");
                     List words = await _wordList();
-                    gamePageNav(word, words);
+                    friendPageNav(word, words);
                   },
                   child: Transform.scale(
                     scale: _scale,
@@ -103,7 +104,7 @@ class _MyHomePageState extends State<MyHomePage>
                 onTap: () async {
                   String word = await _chooseWord("medium");
                   List words = await _wordList();
-                  gamePageNav(word, words);
+                  friendPageNav(word, words);
                 },
                 child: Transform.scale(
                   scale: _scale,
@@ -121,7 +122,7 @@ class _MyHomePageState extends State<MyHomePage>
                 onTap: () async {
                   String word = await _chooseWord("hard");
                   List words = await _wordList();
-                  gamePageNav(word, words);
+                  friendPageNav(word, words);
                 },
                 child: Transform.scale(
                   scale: _scale,
@@ -139,12 +140,15 @@ class _MyHomePageState extends State<MyHomePage>
     );
   }
 
-  void gamePageNav(String word, List words) {
+  void friendPageNav(String word, List words) {
     Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (context) => WordScreen(
-              key: const Key("Word Screen"), word: word, words: words)),
+          builder: (context) => friendScreen(
+              key: const Key("Word Screen"),
+              title: "Friends!",
+              word: word,
+              words: words)),
     );
   }
 
@@ -177,10 +181,203 @@ class _MyHomePageState extends State<MyHomePage>
   }
 }
 
+// ignore: camel_case_types
+class friendScreen extends StatefulWidget {
+  const friendScreen(
+      {super.key,
+      required this.title,
+      required this.word,
+      required this.words});
+  final String word;
+  final List words;
+  final String title;
+
+  @override
+  State<friendScreen> createState() => friendScreenState();
+}
+
+// ignore: camel_case_types
+class friendScreenState extends State<friendScreen> {
+  String? _ipaddress = "Loading...";
+  late Friends _friends;
+  late List<DropdownMenuItem<String>> _friendList;
+  late TextEditingController _nameController, _ipController;
+  var turn = 0;
+  @override
+  void initState() {
+    super.initState();
+    _friends = Friends();
+    _friends.add("Self", "127.0.0.1");
+    _nameController = TextEditingController();
+    _ipController = TextEditingController();
+    _setupServer();
+    _findIPAddress();
+  }
+
+  Future<void> _findIPAddress() async {
+    // Thank you https://stackoverflow.com/questions/52411168/how-to-get-device-ip-in-dart-flutter
+    String? ip = await NetworkInfo().getWifiIP();
+    setState(() {
+      _ipaddress = "My IP: " + ip!;
+    });
+  }
+
+  Future<void> _setupServer() async {
+    try {
+      ServerSocket server =
+          await ServerSocket.bind(InternetAddress.anyIPv4, ourPort);
+      server.listen(_listenToSocket); // StreamSubscription<Socket>
+    } on SocketException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Error: $e"),
+      ));
+    }
+  }
+
+  void _listenToSocket(Socket socket) {
+    socket.listen((data) {
+      setState(() {
+        _handleIncomingMessage(socket.remoteAddress.address, data);
+      });
+    });
+  }
+
+  void _handleIncomingMessage(String ip, Uint8List incomingData) {
+    String received = String.fromCharCodes(incomingData);
+    print("Received '$received' from '$ip'");
+    _friends.receiveFrom(ip, received, widget.word);
+    //turn += 1;
+  }
+
+  void addNew() {
+    setState(() {
+      _friends.add(_nameController.text, _ipController.text);
+    });
+  }
+
+  final ButtonStyle yesStyle = ElevatedButton.styleFrom(
+      textStyle: const TextStyle(fontSize: 20), backgroundColor: Colors.green);
+  final ButtonStyle noStyle = ElevatedButton.styleFrom(
+      textStyle: const TextStyle(fontSize: 20), backgroundColor: Colors.red);
+
+  Future<void> _displayTextInputDialog(BuildContext context) async {
+    print("Loading Dialog");
+    _nameController.text = "";
+    _ipController.text = "";
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Add A Friend'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                TextEntry(
+                    width: 200,
+                    label: "Name",
+                    inType: TextInputType.text,
+                    controller: _nameController),
+                TextEntry(
+                    width: 200,
+                    label: "IP Address",
+                    inType: TextInputType.number,
+                    controller: _ipController),
+              ],
+            ),
+            actions: <Widget>[
+              ElevatedButton(
+                key: const Key("CancelButton"),
+                style: noStyle,
+                child: const Text('Cancel'),
+                onPressed: () {
+                  setState(() {
+                    Navigator.pop(context);
+                  });
+                },
+              ),
+              ElevatedButton(
+                key: const Key("OKButton"),
+                style: yesStyle,
+                child: const Text('OK'),
+                onPressed: () {
+                  setState(() {
+                    addNew();
+                    Navigator.pop(context);
+                  });
+                },
+              ),
+            ],
+          );
+        });
+  }
+
+  Future<void> _handleChat(Friend friend, String word) async {
+    print("Chat");
+    gamePageNav(widget.word, widget.words, friend);
+  }
+
+  void _handleEditFriend(Friend friend) {
+    setState(() {
+      print("Edit");
+    });
+  }
+
+  void gamePageNav(String word, List words, Friend friend) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => WordScreen(
+                key: const Key("Word Screen"),
+                word: word,
+                words: words,
+                friend: friend,
+              )),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+      body: Center(
+        child: ListView(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          children: _friends.map((name) {
+            return FriendListItem(
+                friend: _friends.getFriend(name)!,
+                onListTapped: _handleChat,
+                onListEdited: _handleEditFriend,
+                word: widget.word);
+          }).toList(),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          _displayTextInputDialog(context);
+        },
+        tooltip: 'Add Friend',
+        child: const Icon(Icons.add),
+      ),
+      bottomNavigationBar: Padding(
+          padding: EdgeInsets.all(10),
+          child: Container(
+              width: double.infinity,
+              child: Text(
+                _ipaddress!,
+                textAlign: TextAlign.center,
+              ))),
+    );
+  }
+}
+
 class WordScreen extends StatefulWidget {
-  WordScreen({Key? key, required this.word, required this.words})
+  WordScreen({Key? key, required this.word, required this.words, this.friend})
       : super(key: key);
 
+  final Friend? friend;
   String word;
   List words;
 
@@ -193,25 +390,42 @@ class _WordScreenState extends State<WordScreen> {
   _WordScreenState(this.word, this.words);
   String word;
   List words;
+  var turn = 0;
 
   // ALSO I ADDED THIS
   final _entryForm = GlobalKey<FormState>(); // for validator
 
-  // i just want the dictionary to check validation -- currently not working
-  Future<List> _wordList() async {
-    var words = [];
-    await rootBundle.loadString('assets/english3.txt').then((q) {
-      for (String i in const LineSplitter().convert(q)) {
-        words.add(i);
-      }
+  @override
+  void initState() {
+    super.initState();
+    widget.friend!.addListener(update);
+  }
+
+  @override
+  void dispose() {
+    widget.friend!.removeListener(update);
+    print("Goodbye");
+    super.dispose();
+  }
+
+  void update() {
+    print("New message!");
+    setState(() {});
+  }
+
+  Future<void> send(String msg, String word) async {
+    await widget.friend!.send(msg, word).catchError((e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Error: $e"),
+      ));
     });
-    //print(words);
-    return words; // i just really want this word list
-  } // AND THIS
+  }
 
   @override
   Widget build(BuildContext context) {
-    //var words = await _wordList();
+    var result = "";
+
+    //word = widget.friend!.getWord();
     return Scaffold(
       appBar: AppBar(
         title: Text("Word Masters"),
@@ -221,10 +435,10 @@ class _WordScreenState extends State<WordScreen> {
           alignment: Alignment.center,
           padding: const EdgeInsets.all(30),
           child: Column(children: [
-            Text(
-              "$word",
-              style: TextStyle(fontSize: 30),
-            ),
+            // Text(
+            //   word,
+            //   style: TextStyle(fontSize: 30),
+            // ),
 
             //// EVERYTHING i ADDED STARTS HERE
             Form(
@@ -235,7 +449,7 @@ class _WordScreenState extends State<WordScreen> {
                     border: OutlineInputBorder(), hintText: 'Enter Guess'),
                 validator: (inputValue) {
                   if (inputValue == word) {
-                    return "woohoo!";
+                    return "Woohoo, you are correct!";
                   }
                   if (inputValue == null || inputValue.isEmpty) {
                     return 'Please enter a guess';
@@ -256,14 +470,16 @@ class _WordScreenState extends State<WordScreen> {
                         }
                       }
                     }
-
-                    return "Cows: $cows, bulls: $bulls";
+                    result = "Cows: $cows, bulls: $bulls";
+                    return result;
                   }
 
                   if (inputValue.length != word.length) {
-                    return "word length doesn't match";
+                    result = "word length doesn't match";
+                    return result;
                   } else {
-                    return "not a valid word, try again";
+                    result = "not a valid word, try again";
+                    return result;
                   }
                 },
               ),
@@ -279,10 +495,12 @@ class _WordScreenState extends State<WordScreen> {
                       const SnackBar(content: Text('Processing Guess')),
                     );
                   }
+                  send(result, word);
                 },
                 child: const Text('Submit'),
               ),
             ),
+            widget.friend!.bullsAndCows()
           ])),
     );
   }
