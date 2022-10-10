@@ -186,6 +186,7 @@ Future<void> _displayTextInputDialog(BuildContext context) async {
 
   @override
   Widget build(BuildContext context) {
+    var floatingActionButton;
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -202,33 +203,37 @@ Future<void> _displayTextInputDialog(BuildContext context) async {
                   );
               },
               )
-            /*child: ListView(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              children: _friends.map((name) {
-                return FriendListItem(
-                  friend: _friends.getFriend(name)!,
-                  onListTapped: _handleChat,
-                  onListEdited: _handleEditFriend,
-                );*/
+            
         
-        )
-            /*floatingActionButton: FloatingActionButton(
-                onPressed: () {
-                _displayTextInputDialog(context);
-                tooltip: 'Add Friend',
-            child: const Icon(Icons.add),*/
-          
-        /*/bottomNavigationBar: Padding(
+        )]),
+        /*floatingActionButton: FloatingActionButton()
+          onPressed: () {
+            _displayTextInputDialog(context);
+            Tooltip: 'Add Friend';
+          child: const Icon(Icons.add),
+
+
+        }
+        ),*/
+        
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          _displayTextInputDialog(context);
+        },
+        tooltip: 'Add Friend',
+        child: const Icon(Icons.add),
+      ),
+      bottomNavigationBar: Padding(
           padding: EdgeInsets.all(10),
           child: Container(
               width: double.infinity,
               child: Text(
                 _ipaddress!,
                 textAlign: TextAlign.center,
-              )));*/
+              ))),
   
             
-    ]));
+    );
        
       
   }
