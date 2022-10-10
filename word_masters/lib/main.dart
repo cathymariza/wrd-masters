@@ -191,30 +191,18 @@ Future<void> _displayTextInputDialog(BuildContext context) async {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Column(
-        children: <Widget>[
-          Center(
-            child: ElevatedButton(
-              child: const Text("Start"),
-              onPressed: () {
-                Navigator.push(
-                  context, 
-                  MaterialPageRoute(builder: (context) => LevelScreen(title: "Welcome"))
-                  );
-              },
-              )
-            
-        
-        )]),
-        /*floatingActionButton: FloatingActionButton()
-          onPressed: () {
-            _displayTextInputDialog(context);
-            Tooltip: 'Add Friend';
-          child: const Icon(Icons.add),
-
-
-        }
-        ),*/
+      body: Center(
+          child: ListView(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          children: _friends.map((name) {
+            return FriendListItem(
+              friend: _friends.getFriend(name)!,
+              onListTapped: _handleChat,
+              onListEdited: _handleEditFriend,
+            );
+          }).toList(),
+        ),
+      ),
         
       floatingActionButton: FloatingActionButton(
         onPressed: () {
