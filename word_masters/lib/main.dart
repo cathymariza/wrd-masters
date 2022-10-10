@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+//import 'dart:js';
 import 'dart:math';
 import 'dart:typed_data';
 
@@ -173,6 +174,7 @@ Future<void> _displayTextInputDialog(BuildContext context) async {
     print("Chat");
     await Navigator.of(context).push(
       MaterialPageRoute(
+        //builder: (context) => ChatScreen(friend: friend),
         builder: (context) => LevelScreen(title: "Welcome"),
       ),
     );
@@ -194,13 +196,13 @@ Future<void> _displayTextInputDialog(BuildContext context) async {
       body: Center(
           child: ListView(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
-          children: _friends.map((name) {
-            return FriendListItem(
-              friend: _friends.getFriend(name)!,
-              onListTapped: _handleChat,
-              onListEdited: _handleEditFriend,
-            );
-          }).toList(),
+            children: _friends.map((name) {
+              return FriendListItem(
+                friend: _friends.getFriend(name)!,
+                onListTapped: _handleChat,
+                onListEdited: _handleEditFriend,
+              );
+            }).toList(),
         ),
       ),
         
@@ -225,6 +227,32 @@ Future<void> _displayTextInputDialog(BuildContext context) async {
        
       
   }
+  Future<String> _chooseWord(String diff) async {
+    List<String> words = [];
+    var rand = new Random();
+
+    await rootBundle.loadString('assets/$diff.txt').then((q) {
+      for (String i in LineSplitter().convert(q)) {
+        words.add(i);
+      }
+    });
+    var word = words[rand.nextInt(words.length)];
+    print(word);
+    print(word.runtimeType);
+
+    return word;
+  }
+  Future<List> _wordList() async {
+    var words = [];
+    await rootBundle.loadString('assets/english3.txt').then((q) {
+      for (String i in const LineSplitter().convert(q)) {
+        words.add(i);
+      }
+    });
+    //print(words);
+    return words; // i just really want this word list
+  }
+
   }
 
 
@@ -341,8 +369,10 @@ class _LevelScreenState extends State<LevelScreen>
     Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (context) => WordScreen(
-              key: const Key("Word Screen"), word: word, words: words)),
+        //builder: (context) => LevelScreen(title: "Welcome"),
+        builder: (context) => WordScreen(
+          key: const Key("Word Screen"), word: word, words: words)
+              ),
     );
   }
 
@@ -473,12 +503,6 @@ class _WordScreenState extends State<WordScreen> {
               ),
             ),
           ])),
-    );
-
-
-
-
-
-    
+    );    
   } 
 }
