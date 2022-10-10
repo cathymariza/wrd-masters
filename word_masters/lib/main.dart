@@ -18,9 +18,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Word Masters',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      theme: ThemeData(primarySwatch: Colors.green),
       home: const MyHomePage(title: 'Word Masters'),
     );
   }
@@ -72,8 +70,18 @@ class _MyHomePageState extends State<MyHomePage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            const Align(
+                alignment: Alignment.topCenter,
+                child: Text(
+                  "What difficulty would you like?",
+                  style: TextStyle(
+                      fontSize: 26.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black),
+                )),
             Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.only(
+                    left: 16, right: 16, bottom: 16, top: 150),
                 child: GestureDetector(
                   onTap: () async {
                     String word = await _chooseWord("easy");
@@ -82,9 +90,9 @@ class _MyHomePageState extends State<MyHomePage>
                   },
                   child: Transform.scale(
                     scale: _scale,
-                    child: Button(
-                      start: const Color(0xFF2EB62C),
-                      end: const Color(0xFF2EB62C),
+                    child: const Button(
+                      start: Color(0xFF2EB62C),
+                      end: Color(0xFF2EB62C),
                       name: 'Easy',
                     ),
                   ),
@@ -99,9 +107,9 @@ class _MyHomePageState extends State<MyHomePage>
                 },
                 child: Transform.scale(
                   scale: _scale,
-                  child: Button(
-                    start: const Color(0xFFFFEA61),
-                    end: const Color(0xFFFFEA61),
+                  child: const Button(
+                    start: Color(0xFFFFEA61),
+                    end: Color(0xFFFFEA61),
                     name: 'Medium',
                   ),
                 ),
@@ -117,9 +125,9 @@ class _MyHomePageState extends State<MyHomePage>
                 },
                 child: Transform.scale(
                   scale: _scale,
-                  child: Button(
-                    start: const Color(0xFFDC1C13),
-                    end: const Color(0xFFDC1C13),
+                  child: const Button(
+                    start: Color(0xFFDC1C13),
+                    end: Color(0xFFDC1C13),
                     name: 'Hard',
                   ),
                 ),
@@ -128,11 +136,6 @@ class _MyHomePageState extends State<MyHomePage>
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 
@@ -211,8 +214,8 @@ class _WordScreenState extends State<WordScreen> {
     //var words = await _wordList();
     return Scaffold(
       appBar: AppBar(
-        title: Text("This is the second screen"),
-        backgroundColor: Colors.redAccent,
+        title: Text("Word Masters"),
+        backgroundColor: Colors.green,
       ),
       body: Container(
           alignment: Alignment.center,
