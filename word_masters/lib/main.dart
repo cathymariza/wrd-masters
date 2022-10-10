@@ -173,7 +173,7 @@ Future<void> _displayTextInputDialog(BuildContext context) async {
     print("Chat");
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => ChatScreen(friend: friend),
+        builder: (context) => LevelScreen(title: "Welcome"),
       ),
     );
   }
