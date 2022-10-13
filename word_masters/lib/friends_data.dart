@@ -18,7 +18,7 @@ class Friends extends Iterable<String> {
 
   String? ipAddr(String? name) => _names2Friends[name]?.ipAddr;
 
-  Friend? getFriend(String? name) => _names2Friends[name];
+  Friend? getFriendWithIP(String? ip) => _ips2Friends[ip];
 
   void receiveFrom(String ip, String message, String word) {
     print("receiveFrom($ip, $message)");
@@ -28,7 +28,6 @@ class Friends extends Iterable<String> {
       add(newFriend, ip);
       print("added $newFriend!");
     }
-    _ips2Friends[ip]!.receive(message, word);
   }
 
   @override
@@ -38,60 +37,20 @@ class Friends extends Iterable<String> {
 class Friend extends ChangeNotifier {
   final String ipAddr;
   final String name;
-  final List<Message> _messages = [];
-  Message test = Message(author: "", content: "", word: "");
 
   Friend({required this.ipAddr, required this.name});
 
-  Future<void> send(String message, String word) async {
+  Future<void> send(String message) async {
     Socket socket = await Socket.connect(ipAddr, ourPort);
     socket.write(message);
     socket.close();
-    test = Message(author: "Me", content: message, word: word);
-    await _add_message(
-      "Me",
-      message,
-      word,
-    );
-  }
-
-  Future<void> receive(String message, String word) async {
-    return _add_message(name, message, word);
-  }
-
-  Future<void> _add_message(String name, String message, String word) async {
-    await m.protect(() async {
-      test = Message(author: name, content: message, word: word);
-      //_messages.add(Message(author: name, content: message));
-      notifyListeners();
-    });
-  }
-
-  String history() => _messages
-      .map((m) => m.transcript)
-      .fold("", (message, line) => message + '\n' + line);
-
-  String getWord() => test.word;
-
-  Widget bullsAndCows() {
-    bool is_me = test.author == "Me";
-    return Text(
-      test.content,
-      style: TextStyle(color: is_me ? Color(0xffffffff) : Color(0xFF1B87F3)),
-    );
   }
 }
 
 class Message {
   final String content;
-  final String author;
-  final String word;
 
   Message({
-    required this.author,
     required this.content,
-    required this.word,
   });
-
-  String get transcript => '$author: $content : $word';
 }
