@@ -64,6 +64,13 @@ class friendScreenState extends State<friendScreen> {
     _ipController = TextEditingController();
     _setupServer();
     _findIPAddress();
+    games = {};
+    games.addAll({
+      "127.0.0.1": gameBoard(
+          word: "test",
+          words: ["test", "torn", "forn"],
+          friend: _friends.getFriendWithIP("127.0.0.1"))
+    });
   }
 
   Future<void> _findIPAddress() async {
@@ -94,13 +101,12 @@ class friendScreenState extends State<friendScreen> {
     });
   }
 
-  Future<void> _handleIncomingMessage(String ip, Uint8List incomingData) async {
+  void _handleIncomingMessage(String ip, Uint8List incomingData) {
     String received = String.fromCharCodes(incomingData);
-    word = await _chooseWord(widget.diff);
-    words = await _wordList();
     if (games.containsKey(ip)) {
       games[ip]?.guess = received;
-    } else if (_friends.getFriendWithIP(ip) != null) {
+    } else {
+      _friends.add("Friend", ip);
       games.addAll({
         ip: gameBoard(
             friend: _friends.getFriendWithIP(ip)!, words: words, word: word)
@@ -136,9 +142,16 @@ class friendScreenState extends State<friendScreen> {
     return words;
   }
 
-  void addNew() {
+  Future<void> addNew() async {
+    word = await _chooseWord(widget.diff);
+    words = await _wordList();
     setState(() {
-      _friends.add(_nameController.text, _ipController.text);
+      String ip = _ipController.text;
+      _friends.add(_nameController.text, ip);
+      games.addAll({
+        ip: gameBoard(
+            friend: _friends.getFriendWithIP(ip)!, words: words, word: word)
+      });
     });
   }
 
@@ -227,20 +240,25 @@ class friendScreenState extends State<friendScreen> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: ListView(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          children: games.entries.map((game) {
-            return Card(
-              child: ListTile(
-                title: const Text("Bulls and Cows"),
-                subtitle: Text("Turns taken ${game.value.turns}"),
-                onTap: () {
-                  _handleListTap(game.value);
-                },
+        child: (games.isEmpty)
+            ? const Padding(
+                padding: EdgeInsets.all(5),
+                child: Text('Press + to add a friend!'),
+              )
+            : ListView(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                children: games.entries.map((game) {
+                  return Card(
+                    child: ListTile(
+                      title: const Text("Bulls and Cows"),
+                      subtitle: Text("Turns taken ${game.value.turns}"),
+                      onTap: () {
+                        _handleListTap(game.value);
+                      },
+                    ),
+                  );
+                }).toList(),
               ),
-            );
-          }).toList(),
-        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {

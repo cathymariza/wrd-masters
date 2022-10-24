@@ -10,7 +10,7 @@ import 'friends_data.dart';
 class gameBoard {
   String? guess;
   String word;
-  Friend friend;
+  Friend? friend;
   List words;
   int turn = 1;
   int turns = 0;

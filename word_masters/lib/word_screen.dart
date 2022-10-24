@@ -118,7 +118,7 @@ class _WordScreenState extends State<WordScreen> {
                       const SnackBar(content: Text('Processing Guess')),
                     );
                   }
-                  widget.game?.friend.send(result);
+                  widget.game?.friend?.send(result);
                 },
                 child: const Text('Submit'),
               ),
