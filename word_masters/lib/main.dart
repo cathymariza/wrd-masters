@@ -49,7 +49,8 @@ class friendScreenState extends State<friendScreen> {
   String? _ipaddress = "Loading...";
   late Friends _friends;
   late String word;
-  late List words;
+  String guess = "";
+  List words = [];
   late List<DropdownMenuItem<String>> _friendList;
   late TextEditingController _nameController, _ipController;
   late Map<String, gameBoard> games;
@@ -64,12 +65,11 @@ class friendScreenState extends State<friendScreen> {
     _ipController = TextEditingController();
     _setupServer();
     _findIPAddress();
+    _wordList();
     games = {};
     games.addAll({
-      "127.0.0.1": gameBoard(
-          word: "test",
-          words: ["test", "torn", "forn"],
-          friend: _friends.getFriendWithIP("127.0.0.1"))
+      "127.0.0.1":
+          gameBoard(word: "test", friend: _friends.getFriendWithIP("127.0.0.1"))
     });
   }
 
@@ -103,36 +103,34 @@ class friendScreenState extends State<friendScreen> {
 
   void _handleIncomingMessage(String ip, Uint8List incomingData) {
     String received = String.fromCharCodes(incomingData);
+    var splitWords = received.split(";");
+    String word = splitWords[0];
+    guess = splitWords[1];
     if (games.containsKey(ip)) {
-      games[ip]?.guess = received;
+      games[ip]?.guess = guess;
     } else {
       _friends.add("Friend", ip);
-      games.addAll({
-        ip: gameBoard(
-            friend: _friends.getFriendWithIP(ip)!, words: words, word: word)
-      });
+      games.addAll(
+          {ip: gameBoard(friend: _friends.getFriendWithIP(ip)!, word: word)});
     }
     //turn += 1;
   }
 
   Future<String> _chooseWord(String diff) async {
-    List<String> words = [];
+    List<String> _words = [];
     var rand = Random();
 
     await rootBundle.loadString('assets/$diff.txt').then((q) {
       for (String i in LineSplitter().convert(q)) {
-        words.add(i);
+        _words.add(i);
       }
     });
-    var word = words[rand.nextInt(words.length)];
-    print(word);
-    print(word.runtimeType);
+    var word = _words[rand.nextInt(_words.length)];
 
     return word;
   }
 
   Future<List> _wordList() async {
-    var words = [];
     await rootBundle.loadString('assets/english3.txt').then((q) {
       for (String i in const LineSplitter().convert(q)) {
         words.add(i);
@@ -144,14 +142,11 @@ class friendScreenState extends State<friendScreen> {
 
   Future<void> addNew() async {
     word = await _chooseWord(widget.diff);
-    words = await _wordList();
     setState(() {
       String ip = _ipController.text;
       _friends.add(_nameController.text, ip);
-      games.addAll({
-        ip: gameBoard(
-            friend: _friends.getFriendWithIP(ip)!, words: words, word: word)
-      });
+      games.addAll(
+          {ip: gameBoard(friend: _friends.getFriendWithIP(ip)!, word: word)});
     });
   }
 
@@ -227,9 +222,10 @@ class friendScreenState extends State<friendScreen> {
       context,
       MaterialPageRoute(
           builder: (context) => WordScreen(
-                key: const Key("Word Screen"),
-                game: game,
-              )),
+              key: const Key("Word Screen"),
+              game: game,
+              words: words,
+              guess: guess)),
     );
   }
 

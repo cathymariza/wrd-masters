@@ -3,9 +3,11 @@ import 'package:word_masters/game_state.dart';
 import 'friends_data.dart';
 
 class WordScreen extends StatefulWidget {
-  WordScreen({Key? key, this.game}) : super(key: key);
+  WordScreen({Key? key, this.game, this.words, this.guess}) : super(key: key);
 
   final gameBoard? game;
+  final words;
+  final guess;
   @override
   _WordScreenState createState() => _WordScreenState();
 }
@@ -72,13 +74,13 @@ class _WordScreenState extends State<WordScreen> {
                     border: OutlineInputBorder(), hintText: 'Enter Guess'),
                 validator: (inputValue) {
                   if (inputValue == widget.game?.word) {
-                    return "Woohoo, you are correct!";
+                    return "${widget.game!.word};Woohoo, you are correct!";
                   }
                   if (inputValue == null || inputValue.isEmpty) {
-                    return 'Please enter a guess';
+                    return '${widget.game!.word};Please enter a guess';
                   }
                   //bulls and cows portion
-                  if (widget.game!.words.contains(inputValue)) {
+                  if (widget.words.contains(inputValue)) {
                     // save list of letters in word
                     // check letters in inputValue agaisnt word
                     // hard part of knowing if it is in the rigth location
@@ -93,15 +95,15 @@ class _WordScreenState extends State<WordScreen> {
                         }
                       }
                     }
-                    result = "Cows: $cows, bulls: $bulls";
+                    result = "${widget.game!.word};Cows: $cows, bulls: $bulls";
                     return result;
                   }
 
                   if (inputValue.length != widget.game?.word.length) {
-                    result = "word length doesn't match";
+                    result = "${widget.game!.word};word length doesn't match";
                     return result;
                   } else {
-                    result = "not a valid word, try again";
+                    result = "${widget.game!.word};not a valid word, try again";
                     return result;
                   }
                 },
@@ -119,11 +121,12 @@ class _WordScreenState extends State<WordScreen> {
                     );
                   }
                   widget.game?.friend?.send(result);
+                  print(widget.guess);
                 },
                 child: const Text('Submit'),
               ),
             ),
-            //widget.friend!.bullsAndCows()
+            Text(widget.guess)
           ])),
     );
   }
