@@ -1,20 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:word_masters/friends_data.dart';
 
-typedef FriendListChatCallback = Function(Friend item, String word);
-typedef FriendListEditCallback = Function(Friend item);
+typedef PlayGame = Function(Friend item, String word);
 
-class FriendListItem extends StatelessWidget {
-  FriendListItem(
-      {required this.friend,
-      required this.onListTapped,
-      required this.onListEdited,
-      required this.word})
-      : super(key: ObjectKey(friend));
+class GameListItem extends StatelessWidget {
+  const GameListItem(
+      {required this.friend, required this.onListTapped, required this.word})
+      : super(key: const Key("Testing"));
 
   final Friend friend;
-  final FriendListChatCallback onListTapped;
-  final FriendListEditCallback onListEdited;
+  final PlayGame onListTapped;
   final String word;
 
   @override
@@ -23,9 +18,6 @@ class FriendListItem extends StatelessWidget {
         child: ListTile(
       onTap: () {
         onListTapped(friend, word);
-      },
-      onLongPress: () {
-        onListEdited(friend);
       },
       leading: CircleAvatar(
         backgroundColor: Theme.of(context).primaryColor,
