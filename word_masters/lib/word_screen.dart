@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:word_masters/game_state.dart';
 import 'friends_data.dart';
@@ -15,19 +17,32 @@ class WordScreen extends StatefulWidget {
 // add a field that requires a word to passed to create this screen
 class _WordScreenState extends State<WordScreen> {
   _WordScreenState();
-  var turn = 0;
+  bool turn = true;
 
   // ALSO I ADDED THIS
   final _entryForm = GlobalKey<FormState>(); // for validator
 
+  Widget bullsAndCows() {
+    if (widget.guess != "") {
+      return Text("Opponents last guess : ${widget.guess}");
+    } else {
+      return const Text("");
+    }
+  }
+
+  Widget results(String results) {
+    return Text(results);
+  }
+
   @override
   Widget build(BuildContext context) {
     var result = "";
+    var screenResult = "";
 
     //word = widget.friend!.getWord();
     return Scaffold(
       appBar: AppBar(
-        title: Text("Word Masters"),
+        title: const Text("Word Masters"),
         backgroundColor: Colors.green,
       ),
       body: Container(
@@ -44,11 +59,11 @@ class _WordScreenState extends State<WordScreen> {
               key: _entryForm,
               child: TextFormField(
                 key: const Key('formKey'),
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                     border: OutlineInputBorder(), hintText: 'Enter Guess'),
                 validator: (inputValue) {
                   if (inputValue == widget.game?.word) {
-                    return "${widget.game!.word};Woohoo, you are correct!";
+                    return " The word was ${widget.game!.word};Woohoo, you are correct!";
                   }
                   if (inputValue == null || inputValue.isEmpty) {
                     return '${widget.game!.word};Please enter a guess';
@@ -70,15 +85,15 @@ class _WordScreenState extends State<WordScreen> {
                       }
                     }
                     result = "${widget.game!.word};Cows: $cows, bulls: $bulls";
-                    return result;
+                    screenResult = "Cows: $cows, Bulls: $bulls";
                   }
 
                   if (inputValue.length != widget.game?.word.length) {
                     result = "${widget.game!.word};word length doesn't match";
-                    return result;
+                    screenResult = "Word length doesn't match";
                   } else {
                     result = "${widget.game!.word};not a valid word, try again";
-                    return result;
+                    screenResult = "Not a valid word, try again";
                   }
                 },
               ),
@@ -95,12 +110,16 @@ class _WordScreenState extends State<WordScreen> {
                     );
                   }
                   widget.game?.friend?.send(result);
-                  Navigator.pop(context);
+                  setState(() {
+                    widget.game?.turn = false;
+                    Navigator.pop(context, true);
+                  });
                 },
                 child: const Text('Submit'),
               ),
             ),
-            Text(widget.guess)
+            results(screenResult),
+            bullsAndCows()
           ])),
     );
   }

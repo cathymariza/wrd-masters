@@ -11,7 +11,7 @@ class gameBoard {
   String guess = "";
   String word;
   Friend? friend;
-  int turn = 1;
+  bool turn = true;
   int turns = 0;
 
   gameBoard({required this.word, required this.friend});

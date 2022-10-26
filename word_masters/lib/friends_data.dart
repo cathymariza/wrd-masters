@@ -44,6 +44,7 @@ class Friend extends ChangeNotifier {
     Socket socket = await Socket.connect(ipAddr, ourPort);
     socket.write(message);
     socket.close();
+    sleep(const Duration(seconds: 3));
   }
 }
 

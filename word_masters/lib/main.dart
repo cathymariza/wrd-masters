@@ -54,7 +54,6 @@ class friendScreenState extends State<friendScreen> {
   late List<DropdownMenuItem<String>> _friendList;
   late TextEditingController _nameController, _ipController;
   late Map<String, gameBoard> games;
-  bool turn = true;
 
   @override
   void initState() {
@@ -108,12 +107,12 @@ class friendScreenState extends State<friendScreen> {
     guess = splitWords[1];
     if (games.containsKey(ip)) {
       games[ip]?.guess = guess;
+      games[ip]?.turn = true;
     } else {
       _friends.add("Friend", ip);
       games.addAll(
           {ip: gameBoard(friend: _friends.getFriendWithIP(ip)!, word: word)});
     }
-    //turn += 1;
   }
 
   Future<String> _chooseWord(String diff) async {
@@ -208,7 +207,9 @@ class friendScreenState extends State<friendScreen> {
   }
 
   Future<void> _handleListTap(gameBoard game) async {
-    gamePageNav(game);
+    if (game.turn == true) {
+      gamePageNav(game);
+    }
   }
 
   void _handleEditFriend(Friend friend) {
@@ -229,8 +230,8 @@ class friendScreenState extends State<friendScreen> {
     );
   }
 
-  Widget turnText() {
-    if (turn) {
+  Widget turnText(gameBoard game) {
+    if (game.turn) {
       return const Text("It is your turn");
     } else {
       return const Text("It is not your turn");
@@ -254,8 +255,8 @@ class friendScreenState extends State<friendScreen> {
                 children: games.entries.map((game) {
                   return Card(
                     child: ListTile(
-                      title: const Text("Bulls and Cows"),
-                      subtitle: turnText(),
+                      title: Text("${game.value.friend?.name}"),
+                      subtitle: turnText(game.value),
                       onTap: () {
                         _handleListTap(game.value);
                       },
