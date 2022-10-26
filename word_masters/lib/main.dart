@@ -72,6 +72,8 @@ class friendScreenState extends State<friendScreen> {
     });
   }
 
+  _getRequests() async {}
+
   Future<void> _findIPAddress() async {
     // Thank you https://stackoverflow.com/questions/52411168/how-to-get-device-ip-in-dart-flutter
     String? ip = await NetworkInfo().getWifiIP();
@@ -219,15 +221,16 @@ class friendScreenState extends State<friendScreen> {
   }
 
   void gamePageNav(game) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-          builder: (context) => WordScreen(
-              key: const Key("Word Screen"),
-              game: game,
-              words: words,
-              guess: guess)),
-    );
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute(
+              builder: (context) => WordScreen(
+                  key: const Key("Word Screen"),
+                  game: game,
+                  words: words,
+                  guess: guess)),
+        )
+        .then((value) => setState(() => {}));
   }
 
   Widget turnText(gameBoard game) {

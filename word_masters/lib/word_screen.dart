@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -18,9 +19,15 @@ class WordScreen extends StatefulWidget {
 class _WordScreenState extends State<WordScreen> {
   _WordScreenState();
   bool turn = true;
+  Timer? timer;
 
   // ALSO I ADDED THIS
   final _entryForm = GlobalKey<FormState>(); // for validator
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
+  }
 
   Widget bullsAndCows() {
     if (widget.guess != "") {
@@ -32,6 +39,10 @@ class _WordScreenState extends State<WordScreen> {
 
   Widget results(String results) {
     return Text(results);
+  }
+
+  void friendsPage() {
+    Navigator.pop(context, true);
   }
 
   @override
@@ -63,7 +74,7 @@ class _WordScreenState extends State<WordScreen> {
                     border: OutlineInputBorder(), hintText: 'Enter Guess'),
                 validator: (inputValue) {
                   if (inputValue == widget.game?.word) {
-                    return " The word was ${widget.game!.word};Woohoo, you are correct!";
+                    return "The word was ${widget.game!.word}, Woohoo, you are correct!";
                   }
                   if (inputValue == null || inputValue.isEmpty) {
                     return '${widget.game!.word};Please enter a guess';
@@ -86,14 +97,17 @@ class _WordScreenState extends State<WordScreen> {
                     }
                     result = "${widget.game!.word};Cows: $cows, bulls: $bulls";
                     screenResult = "Cows: $cows, Bulls: $bulls";
+                    return screenResult;
                   }
 
                   if (inputValue.length != widget.game?.word.length) {
                     result = "${widget.game!.word};word length doesn't match";
                     screenResult = "Word length doesn't match";
+                    return screenResult;
                   } else {
                     result = "${widget.game!.word};not a valid word, try again";
                     screenResult = "Not a valid word, try again";
+                    return screenResult;
                   }
                 },
               ),
@@ -110,16 +124,16 @@ class _WordScreenState extends State<WordScreen> {
                     );
                   }
                   widget.game?.friend?.send(result);
-                  setState(() {
-                    widget.game?.turn = false;
-                    Navigator.pop(context, true);
+                  widget.game?.turn = false;
+                  timer = Timer(const Duration(seconds: 4), () {
+                    friendsPage();
                   });
                 },
                 child: const Text('Submit'),
               ),
             ),
-            results(screenResult),
-            bullsAndCows()
+            //results(screenResult),
+            bullsAndCows(),
           ])),
     );
   }
