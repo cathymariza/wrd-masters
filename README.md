@@ -8,7 +8,7 @@ The idea behind Bulls and Cows is a play on the game Mastermind. The game goes l
 This app is useful because it allows for people to play this game while they are not together and also not let people cheat because they are unable to see what each of them guess. It is also fun for people who like a challenge because we have added three difficulties where the harder you go, the longer the words are. Easy is 4, Medium is 5 and Hard is 6 or 7.
 
 The difficulty screen.
-<img align="right" src=https://user-images.githubusercontent.com/74222391/198133186-85f1bd1e-5859-4b96-897a-86d5e158e28c.png height="500" width="300">
+<img align="left" src=https://user-images.githubusercontent.com/74222391/198133186-85f1bd1e-5859-4b96-897a-86d5e158e28c.png height="500" width="300">
 
 Here you can add a friend by clicking the button in the bottom right.
 <img src=https://user-images.githubusercontent.com/74222391/198133315-7a002a1b-25f8-4349-823a-ea89a7eca4af.png height="500" width="300">
