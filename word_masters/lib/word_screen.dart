@@ -20,32 +20,6 @@ class _WordScreenState extends State<WordScreen> {
   // ALSO I ADDED THIS
   final _entryForm = GlobalKey<FormState>(); // for validator
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   widget.friend!.addListener(update);
-  // }
-
-  // @override
-  // void dispose() {
-  //   widget.friend!.removeListener(update);
-  //   print("Goodbye");
-  //   super.dispose();
-  // }
-
-  // void update() {
-  //   print("New message!");
-  //   setState(() {});
-  // }
-
-  // Future<void> send(String msg, String word) async {
-  //   await widget.friend!.send(msg, word).catchError((e) {
-  //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-  //       content: Text("Error: $e"),
-  //     ));
-  //   });
-  // }
-
   @override
   Widget build(BuildContext context) {
     var result = "";
@@ -121,7 +95,7 @@ class _WordScreenState extends State<WordScreen> {
                     );
                   }
                   widget.game?.friend?.send(result);
-                  print(widget.guess);
+                  Navigator.pop(context);
                 },
                 child: const Text('Submit'),
               ),

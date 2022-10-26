@@ -54,8 +54,8 @@ class friendScreenState extends State<friendScreen> {
   late List<DropdownMenuItem<String>> _friendList;
   late TextEditingController _nameController, _ipController;
   late Map<String, gameBoard> games;
+  bool turn = true;
 
-  var turn = 0;
   @override
   void initState() {
     super.initState();
@@ -229,6 +229,14 @@ class friendScreenState extends State<friendScreen> {
     );
   }
 
+  Widget turnText() {
+    if (turn) {
+      return const Text("It is your turn");
+    } else {
+      return const Text("It is not your turn");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -247,7 +255,7 @@ class friendScreenState extends State<friendScreen> {
                   return Card(
                     child: ListTile(
                       title: const Text("Bulls and Cows"),
-                      subtitle: Text("Turns taken ${game.value.turns}"),
+                      subtitle: turnText(),
                       onTap: () {
                         _handleListTap(game.value);
                       },
