@@ -12,6 +12,7 @@ import 'package:word_masters/game_state.dart';
 import "package:word_masters/text_widgets.dart";
 import "package:word_masters/home_page.dart";
 import 'package:word_masters/word_screen.dart';
+import 'package:google_nav_bar/google_nav_bar.dart';
 
 import 'game_list.dart';
 
@@ -219,7 +220,14 @@ class friendScreenState extends State<friendScreen> {
       print("Edit");
     });
   }
-
+  void friendPageNav(String diff) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => friendScreen(
+              key: const Key("Word Screen"), title: "Friends!", diff: diff)),
+    );
+  }
   void gamePageNav(game) {
     Navigator.of(context)
         .push(
@@ -268,21 +276,63 @@ class friendScreenState extends State<friendScreen> {
                 }).toList(),
               ),
       ),
-      floatingActionButton: FloatingActionButton(
+      /*floatingActionButton: FloatingActionButton(
         onPressed: () {
           _displayTextInputDialog(context);
         },
         tooltip: 'Add Friend',
         child: const Icon(Icons.add),
+      ),*/
+      bottomNavigationBar: GNav(
+        /*Padding(
+            padding: EdgeInsets.all(10),
+            child: Container(
+                width: double.infinity,
+                child: Text(
+                  _ipaddress!,
+                  textAlign: TextAlign.center,
+                ))),*/
+            tabs: [
+                GButton(
+                  icon: Icons.home,
+                  text: 'Home',
+                  iconColor: Colors.blueGrey,
+                  //textStyle: null,
+                  ),
+                GButton(
+                  icon: Icons.person,
+                  text: 'Friends',
+                  iconColor: Colors.blueGrey,
+                  onPressed: (game) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => WordScreen(
+                  key: const Key("Word Screen"),
+                  game: game,
+                  words: words,
+                  guess: guess)),
+                  );
+                  },
+                  ),
+                GButton(
+                  icon: Icons.add,
+                  text: 'Add friend',
+                  iconColor: Colors.blueGrey,
+                  onPressed: () {
+                      _displayTextInputDialog(context);
+                    },
+                  ),
+                GButton(
+                  icon: Icons.score,
+                  text: 'Score',
+                  iconColor: Colors.blueGrey,
+                  onPressed: () {
+                      _displayTextInputDialog(context);
+                    },
+                  ),
+              ],
       ),
-      bottomNavigationBar: Padding(
-          padding: EdgeInsets.all(10),
-          child: Container(
-              width: double.infinity,
-              child: Text(
-                _ipaddress!,
-                textAlign: TextAlign.center,
-              ))),
     );
   }
 }
